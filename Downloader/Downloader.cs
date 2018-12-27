@@ -15,7 +15,7 @@ namespace Downloader
 		private const string Url = "ftp://speedtest.tele2.net/50MB.zip";
 		private const string LocalFolder = @"c:\temp";
 		private const string Hash = "8565A714DCA840F8652C5BAE9249AB05F5FB5A4F9F13FBE23304B10F68252DA2";
-		private StatusDownload Downloads = StatusDownload.aguardando;
+		private StatusDownload Downloads = StatusDownload.waiting;
 		private readonly PersistedListExtension _persistedList;
 
 		private static ManualResetEventSlim _manualResetEventSlim;
@@ -28,54 +28,55 @@ namespace Downloader
 			_persistedList = new PersistedListExtension();
 			_manualResetEventSlim = new ManualResetEventSlim();
 
-			// registra o evento para Downloads concluídos
+			// register the listener
 			DownloadManager.Instance.DownloadEnded += DownloadEnded;
 
-			//se há downloads não finalizados
+			// if there is unfinished downloads
 			if (DownloadManager.Instance.Downloads.Any())
-				ContinuarDownloads();
+				ResumeDownloads();
 		}
 
-		private void BtnIniciar(object sender, EventArgs e)
+		private void BtnStart(object sender, EventArgs e)
 		{
 			switch (Downloads)
 			{
-				case StatusDownload.baixando:
-					PausarDownload();
+				case StatusDownload.downloading:
+					PauseDownloads();
 					break;
-				case StatusDownload.aguardando:
-					IniciarDownload();
+				case StatusDownload.waiting:
+					StartDownloads();
 					break;
-				case StatusDownload.emPausa:
-					ContinuarDownloads();
+				case StatusDownload.paused:
+					ResumeDownloads();
 					break;
-				case StatusDownload.concluido:
+				case StatusDownload.finished:
 					Application.Exit();
 					break;
 			}
 		}
 
-		private void ContinuarDownloads()
+		private void ResumeDownloads()
 		{
 			var downloader = DownloadManager.Instance.Downloads.FirstOrDefault();
 			downloader.Start();
-			status.Text = "Baixando...";
-			iniciar.Text = "Pausar";
-			Downloads = StatusDownload.baixando;
-			Thread t = new Thread(AtualizarProgresso);
+			status.Text = "Downloading...";
+			start.Text = "Pause";
+			Downloads = StatusDownload.downloading;
+			Thread t = new Thread(UpdateProgress);
 			t.Start();
 		}
 
-		private void PausarDownload()
+		private void PauseDownloads()
 		{
-			status.Text = "Salvando...";
+			status.Text = "Saving...";
+			//pause all and force update
 			_persistedList.Dispose();
-			status.Text = "Em pausa";
-			iniciar.Text = "Continuar";
-			Downloads = StatusDownload.emPausa;
+			status.Text = "Paused";
+			start.Text = "Resume";
+			Downloads = StatusDownload.paused;
 		}
 
-		private void IniciarDownload()
+		private void StartDownloads()
 		{
 			var resourceLocation = SegmentDownloader.Core.ResourceLocation.FromURL(Url);
 
@@ -89,11 +90,11 @@ namespace Downloader
 
 			// start download
 			downloader.Start();
-			status.Text = "Baixando...";
-			iniciar.Text = "Pausar";
-			Downloads = StatusDownload.baixando;
+			status.Text = "Downloading...";
+			start.Text = "Pause";
+			Downloads = StatusDownload.downloading;
 
-			Thread t = new Thread(AtualizarProgresso);
+			Thread t = new Thread(UpdateProgress);
 			t.Start();
 		}
 
@@ -103,16 +104,19 @@ namespace Downloader
 				? $"Download Ended With Error '{e.Downloader.LastError.Message}'"
 				: "Download Ended");
 
-			SetControlPropertyValue(status, "Text", "Validando arquivo...");
+			// validate file
+			SetControlPropertyValue(status, "Text", "Validating file...");
 			if (FileValidator.Validate(e.Downloader.LocalFile, Hash))
-				SetControlPropertyValue(status, "Text", "Download concluído");
+				SetControlPropertyValue(status, "Text", "Download finished");
 			else
-				SetControlPropertyValue(status, "Text", "Arquivo inválido");
+				SetControlPropertyValue(status, "Text", "Invalid file");
 
-			SetControlPropertyValue(iniciar, "Text", "Fechar");
+			// update window
+			SetControlPropertyValue(start, "Text", "Close");
 			SetControlPropertyValue(progress, "Value", 100);
-			Downloads = StatusDownload.concluido;
+			Downloads = StatusDownload.finished;
 
+			// force to update the persisted list
 			_persistedList.Dispose();
 			_manualResetEventSlim.Set();
 		}
@@ -124,13 +128,13 @@ namespace Downloader
 			ProtocolProviderFactory.RegisterProtocolHandler("ftp", typeof(FtpProtocolProvider));
 		}
 
-		private void AtualizarProgresso()
+		private void UpdateProgress()
 		{
 			var downloader = DownloadManager.Instance.Downloads.FirstOrDefault();
 			while (downloader.IsWorking())
 			{
 				SetControlPropertyValue(progress, "Value", (int)downloader.Progress);
-				SetControlPropertyValue(status, "Text", "Baixando... " + Convert.ToInt32(downloader.Rate / 1024) + " KB/s");
+				SetControlPropertyValue(status, "Text", "Downloading... " + Convert.ToInt32(downloader.Rate / 1024) + " KB/s");
 				Thread.Sleep(500);
 			}
 		}
@@ -159,20 +163,23 @@ namespace Downloader
 			}
 		}
 
-		private void FecharPrograma(object sender, FormClosedEventArgs e)
+		private void CloseApp(object sender, FormClosedEventArgs e)
 		{
-			if (Downloads == StatusDownload.baixando)
-				SetControlPropertyValue(status, "Text", "Salvando...");
-			_persistedList.Dispose();
+			if (Downloads == StatusDownload.downloading)
+			{
+				SetControlPropertyValue(status, "Text", "Saving...");
+				PauseDownloads();
+			}
+			Application.Exit();
 		}
 	}
 
 	enum StatusDownload
 	{
-		aguardando,
-		baixando,
-		emPausa,
-		concluido
+		waiting,
+		downloading,
+		paused,
+		finished
 	}
 
 }

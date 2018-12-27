@@ -2,16 +2,9 @@
 {
 	partial class Downloader
 	{
-		/// <summary>
-		/// Variável de designer necessária.
-		/// </summary>
 		private System.ComponentModel.IContainer components = null;
 
-		/// <summary>
-		/// Limpar os recursos que estão sendo usados.
-		/// </summary>
-		/// <param name="disposing">true se for necessário descartar os recursos gerenciados; caso contrário, false.</param>
-		protected override void Dispose(bool disposing)
+				protected override void Dispose(bool disposing)
 		{
 			if (disposing && (components != null))
 			{
@@ -21,27 +14,22 @@
 		}
 
 		#region Código gerado pelo Windows Form Designer
-
-		/// <summary>
-		/// Método necessário para suporte ao Designer - não modifique 
-		/// o conteúdo deste método com o editor de código.
-		/// </summary>
 		private void InitializeComponent()
 		{
-			this.iniciar = new System.Windows.Forms.Button();
+			this.start = new System.Windows.Forms.Button();
 			this.progress = new System.Windows.Forms.ProgressBar();
 			this.status = new System.Windows.Forms.TextBox();
 			this.SuspendLayout();
 			// 
-			// iniciar
+			// start
 			// 
-			this.iniciar.Location = new System.Drawing.Point(432, 141);
-			this.iniciar.Name = "iniciar";
-			this.iniciar.Size = new System.Drawing.Size(75, 23);
-			this.iniciar.TabIndex = 0;
-			this.iniciar.Text = "Iniciar";
-			this.iniciar.UseVisualStyleBackColor = true;
-			this.iniciar.Click += new System.EventHandler(this.BtnIniciar);
+			this.start.Location = new System.Drawing.Point(432, 141);
+			this.start.Name = "start";
+			this.start.Size = new System.Drawing.Size(75, 23);
+			this.start.TabIndex = 0;
+			this.start.Text = "Start";
+			this.start.UseVisualStyleBackColor = true;
+			this.start.Click += new System.EventHandler(this.BtnStart);
 			// 
 			// progress
 			// 
@@ -58,19 +46,19 @@
 			this.status.ReadOnly = true;
 			this.status.Size = new System.Drawing.Size(414, 20);
 			this.status.TabIndex = 2;
-			this.status.Text = "Aguardando início";
+			this.status.Text = "Waiting to begin...";
 			// 
-			// Form1
+			// Downloader
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(515, 208);
 			this.Controls.Add(this.status);
 			this.Controls.Add(this.progress);
-			this.Controls.Add(this.iniciar);
-			this.Name = "Form1";
+			this.Controls.Add(this.start);
+			this.Name = "Downloader";
 			this.Text = "Downloader";
-			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FecharPrograma);
+			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.CloseApp);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -78,7 +66,7 @@
 
 		#endregion
 
-		private System.Windows.Forms.Button iniciar;
+		private System.Windows.Forms.Button start;
 		private System.Windows.Forms.ProgressBar progress;
 		private System.Windows.Forms.TextBox status;
 	}
