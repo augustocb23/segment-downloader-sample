@@ -1,6 +1,6 @@
-﻿# Downloader
+# Downloader
 
-Usage example for [SegmentDownloader Core](https://www.nuget.org/packages/SegmentDownloader.Core), a updated version from the tool created by @guilhermelabigalini, maintained by @golavr.
+Usage example for [SegmentDownloader Core](https://www.nuget.org/packages/SegmentDownloader.Core), a updated version from the tool created by [guilhermelabigalini](https://github.com/guilhermelabigalini/mydownloader) and maintained by [golavr](https://github.com/golavr/SegmentDownloader). Also uses hash to validate files.
 
 ## Persisted List Extension
 
